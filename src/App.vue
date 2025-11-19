@@ -27,7 +27,7 @@ emitter.on("scene_loaded",e=>{
     <Nav></Nav>
     <BabylonScene></BabylonScene>
 
-    <ViewportGizmo style="position: absolute;top: 100px;right: 0;"></ViewportGizmo>
+    <ViewportGizmo></ViewportGizmo>
   </NConfigProvider>
 </template>
 

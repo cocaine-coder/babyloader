@@ -3,34 +3,15 @@
     <svg :width="size" :height="size">
       <g :transform="`translate(${halfSize}, ${halfSize})`">
         <template v-for="circle in circles">
-          <line
-            v-if="circle.direction > 0"
-            :stroke="colors[circle.axisType]"
-            :x2="circle.translate.x"
-            :y2="circle.translate.y"
-          ></line>
-          <g
-            cursor="pointer"
-            :transform="`translate(${circle.translate.x}, ${circle.translate.y})`"
-          >
-            <circle
-              :fill="circle.direction < 0 ? '#555' : colors[circle.axisType]"
-              :stroke="colors[circle.axisType]"
-              stroke-width="2"
-              r="10"
-              cx="0"
-              cy="0"
-              pointer-events="all"
-              @click="handleCircleClick(circle.axisType, circle.direction)"
-            ></circle>
-            <text
-              v-if="circle.direction > 0"
-              font-size="10"
-              font-weight="bold"
-              text-anchor="middle"
-              alignment-baseline="central"
-            >
-              {{ circle.axisType }}
+          <line v-if="circle.direction > 0" :stroke="colors[circle.axisType]" stroke-width="2" :x2="circle.translate.x"
+            :y2="circle.translate.y"></line>
+          <g cursor="pointer" :transform="`translate(${circle.translate.x}, ${circle.translate.y})`">
+            <circle :fill="circle.direction < 0 ? '#ccc' : colors[circle.axisType]" :stroke="colors[circle.axisType]"
+              stroke-width="2" r="10" cx="0" cy="0" pointer-events="all"
+              @click="handleCircleClick(circle.axisType, circle.direction)"></circle>
+            <text font-size="10" font-weight="bold" text-anchor="middle"
+              alignment-baseline="central">
+              {{ (circle.direction > 0 ? "" : "-") + circle.axisType }}
             </text>
           </g>
         </template>
@@ -185,5 +166,8 @@ function handleCircleClick(type: TAxis["axisType"], direction: -1 | 1) {
 <style scoped>
 .gizmo-viewport {
   pointer-events: none;
+  position: absolute;
+  top: 60px;
+  right: 0;
 }
 </style>
