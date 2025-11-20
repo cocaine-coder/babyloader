@@ -4,7 +4,12 @@ import Nav from "./components/Nav.vue";
 import { NConfigProvider, darkTheme } from "naive-ui";
 
 import { shallowRef } from "vue";
-import type { ArcRotateCamera, Engine, Scene } from "@babylonjs/core";
+import {
+  MeshBuilder,
+  type ArcRotateCamera,
+  type Engine,
+  type Scene,
+} from "@babylonjs/core";
 import { GridAxisManager } from "./libs";
 import { DI, type TAppContext } from "./di";
 
@@ -23,6 +28,12 @@ function handleSceneLoaded(
     camera,
     gridAxisManager: new GridAxisManager(scene),
   };
+
+  const box = MeshBuilder.CreateBox("box", {}, scene);
+  box.renderingGroupId = 2;
+  box.position.y = 1;
+  box.position.z = 2;
+  box.position.x = 1;
 }
 </script>
 

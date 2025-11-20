@@ -4,7 +4,7 @@ import { GridMaterial } from "@babylonjs/materials";
 export class GridAxisManager {
     private readonly ground: GroundMesh;
     private readonly axises: ReadonlyArray<GreasedLineBaseMesh | GreasedLineMesh | GreasedLineRibbonMesh>;
-    private isOrthogonal = false;
+    private isInAxis = false;
 
     private get axisX() {
         return this.axises[0]!;
@@ -77,8 +77,8 @@ export class GridAxisManager {
             });
     }
 
-    setOrthogonal(axis: "X" | "Y" | "Z", direction: -1 | 1) {
-        this.isOrthogonal = true;
+    freezeInAxis(axis: "X" | "Y" | "Z", direction: -1 | 1) {
+        this.isInAxis = true;
 
         // 设置ground
         this.ground.rotation =
@@ -115,9 +115,9 @@ export class GridAxisManager {
         }
     }
 
-    setPerspective() {
-        if (!this.isOrthogonal) return;
-        this.isOrthogonal = false;
+    unfreezeInAxis() {
+        if (!this.isInAxis) return;
+        this.isInAxis = false;
 
         // 设置ground
         this.ground.rotation = new Vector3(0, 0, 0);
@@ -131,6 +131,6 @@ export class GridAxisManager {
 
         this.axisX.visibility = 1;
         this.axisY.visibility = 0;
-        this.axisX.visibility = 1;
+        this.axisZ.visibility = 1;
     }
 }

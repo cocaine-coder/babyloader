@@ -1,6 +1,7 @@
-import type { ArcRotateCamera } from "@babylonjs/core";
-import { computed, ref, watchEffect } from "vue";
+import { Camera, type ArcRotateCamera } from "@babylonjs/core";
+import { shallowRef } from "vue";
 import { DI } from "../di";
+import { Utils } from "../libs";
 
 export type TAxisTransform = {
     axisType: "X" | "Y" | "Z";
@@ -10,17 +11,68 @@ export type TAxisTransform = {
 
 export function useAxisCameraSync(camera: ArcRotateCamera, axisSize: number = 40) {
     const appContext = DI.get("app-context");
-    const alpha = ref(camera.alpha);
-    const beta = ref(camera.beta);
+    const axises = shallowRef<TAxisTransform[]>(calcAxises(camera.alpha, camera.beta));
+    let isInAxisSetting = false;
 
-    const axises = computed(() => {
-        const x_x = axisSize * Math.sin(-alpha.value);
-        const z_x = axisSize * Math.sin(alpha.value + Math.PI / 2);
+    camera.onViewMatrixChangedObservable.add(() => {
+        const alpha = camera.alpha;
+        const beta = camera.beta;
+        axises.value = calcAxises(alpha, beta);
+
+        // 处于平行于某个轴
+        if (Utils.cameraInAxis(camera)) {
+            if (isInAxisSetting) {
+                const canvas = appContext.value!.engine.getRenderingCanvas()!;
+                const ratio = canvas.clientHeight / canvas.clientWidth;
+                const radius = camera.radius;
+
+                camera.orthoLeft = - Math.abs(radius);
+                camera.orthoRight = Math.abs(radius);
+                camera.orthoTop = Math.abs(radius) * ratio;
+                camera.orthoBottom = -Math.abs(radius) * ratio;
+                camera.mode = Camera.ORTHOGRAPHIC_CAMERA;
+            }
+        } else {
+            if (isInAxisSetting) {
+                appContext.value?.gridAxisManager.unfreezeInAxis();
+
+                if (camera.mode === Camera.ORTHOGRAPHIC_CAMERA)
+                    camera.mode = Camera.PERSPECTIVE_CAMERA;
+
+                isInAxisSetting = false;
+            }
+        }
+    });
+
+    function handleAxisChange(type: TAxisTransform["axisType"], direction: -1 | 1) {
+        switch (type) {
+            case "X":
+                camera.beta = Math.PI / 2;
+                camera.alpha = direction > 0 ? 0 : Math.PI;
+                break;
+            case "Z":
+                camera.beta = Math.PI / 2;
+                camera.alpha = direction > 0 ? Math.PI / 2 : -Math.PI / 2;
+                break;
+            case "Y":
+                camera.alpha = 0;
+                camera.beta = direction > 0 ? 0 : Math.PI;
+                break;
+        }
+
+        isInAxisSetting = true;
+        appContext.value?.gridAxisManager.freezeInAxis(type, direction);
+    }
+
+    function calcAxises(alpha: number, beta: number) {
+
+        const x_x = axisSize * Math.sin(-alpha);
+        const z_x = axisSize * Math.sin(alpha + Math.PI / 2);
         const y_x = 0;
 
-        const x_y = axisSize * Math.cos(beta.value) * Math.cos(-alpha.value);
-        const z_y = -axisSize * Math.cos(beta.value) * Math.cos(alpha.value + Math.PI / 2);
-        const y_y = -axisSize * Math.sin(beta.value);
+        const x_y = axisSize * Math.cos(beta) * Math.cos(-alpha);
+        const z_y = -axisSize * Math.cos(beta) * Math.cos(alpha + Math.PI / 2);
+        const y_y = -axisSize * Math.sin(beta);
 
         const result = new Array<TAxisTransform>();
 
@@ -73,9 +125,9 @@ export function useAxisCameraSync(camera: ArcRotateCamera, axisSize: number = 40
             },
         };
 
-        result.push(beta.value < Math.PI / 2 ? y1 : y0);
-        const sinAlpha = Math.sin(alpha.value);
-        const cosAlpha = Math.cos(alpha.value);
+        result.push(beta < Math.PI / 2 ? y1 : y0);
+        const sinAlpha = Math.sin(alpha);
+        const cosAlpha = Math.cos(alpha);
 
         const otherY = result[0] === y0 ? y1 : y0;
 
@@ -105,40 +157,11 @@ export function useAxisCameraSync(camera: ArcRotateCamera, axisSize: number = 40
             result.push(z1);
         }
 
-        if (Math.abs(beta.value - Math.PI / 2) >= (Math.PI * 2) / 5) result.push(otherY);
+        if (Math.abs(beta - Math.PI / 2) >= (Math.PI * 2) / 5) result.push(otherY);
         else result.splice(result.length - 1, 0, otherY);
 
         return result;
-    });
-
-    function handleAxisClick(type: TAxisTransform["axisType"], direction: -1 | 1) {
-        switch (type) {
-            case "X":
-                beta.value = Math.PI / 2;
-                alpha.value = direction > 0 ? 0 : Math.PI;
-                break;
-            case "Z":
-                beta.value = Math.PI / 2;
-                alpha.value = direction > 0 ? Math.PI / 2 : -Math.PI / 2;
-                break;
-            case "Y":
-                alpha.value = 0;
-                beta.value = direction > 0 ? 0 : Math.PI;
-                break;
-        }
-
-        appContext.value?.gridAxisManager.setOrthogonal(type, direction);
     }
 
-    watchEffect(() => {
-        camera.alpha = alpha.value;
-        camera.beta = beta.value;
-    });
-
-    camera.onViewMatrixChangedObservable.add(() => {
-        alpha.value = camera.alpha;
-        beta.value = camera.beta;
-    });
-
-    return { axises, handleAxisClick };
+    return { axises, handleAxisChange };
 }

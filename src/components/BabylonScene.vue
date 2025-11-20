@@ -41,7 +41,6 @@ onMounted(() => {
     const camera = scene.activeCamera as ArcRotateCamera;
     camera.radius = 10;
     camera.beta = (Math.PI * 2) / 5;
-    camera.alpha = Math.PI / 4;
     camera.pinchDeltaPercentage = 0.05;
     camera.wheelDeltaPercentage = 0.05;
     camera.upperRadiusLimit = 500;

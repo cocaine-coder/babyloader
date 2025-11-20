@@ -22,7 +22,7 @@
               cx="0"
               cy="0"
               pointer-events="all"
-              @click="handleAxisClick(axis.axisType, axis.direction)"
+              @click="handleAxisChange(axis.axisType, axis.direction)"
             ></circle>
             <text
               font-size="10"
@@ -41,7 +41,10 @@
 
 <script setup lang="ts">
 import type { ArcRotateCamera } from "@babylonjs/core";
-import { useAxisCameraSync, type TAxisTransform } from "../hooks/useAxisCameraSync";
+import {
+  useAxisCameraSync,
+  type TAxisTransform,
+} from "../hooks/useAxisCameraSync";
 
 const props = defineProps<{
   camera: ArcRotateCamera;
@@ -56,7 +59,7 @@ const colors: Record<TAxisTransform["axisType"], string> = {
   Z: "#77f",
 };
 
-const { axises, handleAxisClick } = useAxisCameraSync(props.camera, axisSize);
+const { axises, handleAxisChange } = useAxisCameraSync(props.camera, axisSize);
 </script>
 
 <style scoped>
