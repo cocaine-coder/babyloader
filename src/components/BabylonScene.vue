@@ -8,26 +8,25 @@
       scrollbar-width: none;
     "
   >
-    <canvas ref="canvasRef" style="width: 100%; height: 100%;"></canvas>
+    <ViewportGizmo v-if="cameraRef" :camera="cameraRef"></ViewportGizmo>
+    <canvas ref="canvasRef" style="width: 100%; height: 100%"></canvas>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "vue";
-import {
-  Engine,
-  Scene,
-  Color4,
-  LoadAssetContainerAsync,
-  ArcRotateCamera,
-} from "@babylonjs/core";
+import { onMounted, onUnmounted, ref, shallowRef } from "vue";
+import { Engine, Scene, Color4, ArcRotateCamera } from "@babylonjs/core";
 import "@babylonjs/loaders";
 import "@babylonjs/inspector";
-import emitter from "../eventbus";
+import ViewportGizmo from "./ViewportGizmo.vue";
+
+const props = defineProps<{
+  onLoaded?(engine: Engine, scene: Scene, camera: ArcRotateCamera): void;
+}>();
 
 const canvasRef = ref<HTMLCanvasElement | null>(null);
+const cameraRef = shallowRef<ArcRotateCamera>();
 let engine: Engine | undefined;
-
 const onWindowResize = () => {
   engine?.resize();
 };
@@ -40,6 +39,9 @@ onMounted(() => {
     scene.createDefaultCameraOrLight(true, true, true);
 
     const camera = scene.activeCamera as ArcRotateCamera;
+    camera.radius = 10;
+    camera.beta = (Math.PI * 2) / 5;
+    camera.alpha = Math.PI / 4;
     camera.pinchDeltaPercentage = 0.05;
     camera.wheelDeltaPercentage = 0.05;
     camera.upperRadiusLimit = 500;
@@ -49,36 +51,14 @@ onMounted(() => {
       camera.panningSensibility = 1000 / camera.radius; // 根据相机距离动态计算
     });
 
-    emitter.on('update_camera',e=>{
-      camera.alpha = e.alpha;
-      camera.beta = e.beta;
-    });
-
-    camera.onViewMatrixChangedObservable.add(() => {
-      emitter.emit("camera_change", { alpha: camera.alpha, beta: camera.beta });
-    });
-
     engine.runRenderLoop(() => {
       scene.render();
     });
 
     window.addEventListener("resize", onWindowResize);
 
-    emitter.emit("scene_loaded", { engine, scene });
-    emitter.on("import_model", async (model) => {
-      const assetContainer = await LoadAssetContainerAsync(model, scene, {
-        onProgress: (e) => {
-          emitter.emit("import_model_progress", e);
-        },
-      });
-
-      assetContainer.addAllToScene();
-    });
-
-    emitter.on("toggle_debugger", () => {
-      if (scene.debugLayer.isVisible()) scene.debugLayer.hide();
-      else scene.debugLayer.show({ overlay: true });
-    });
+    props.onLoaded?.(engine, scene, camera);
+    cameraRef.value = camera;
   }
 });
 

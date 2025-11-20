@@ -1,33 +1,39 @@
 <script setup lang="ts">
-import { NConfigProvider, darkTheme } from "naive-ui";
 import BabylonScene from "./components/BabylonScene.vue";
 import Nav from "./components/Nav.vue";
-import emitter from "./eventbus";
-import { generateGrid } from "./libs";
-import { MeshBuilder } from "@babylonjs/core";
-import ViewportGizmo from "./components/ViewportGizmo.vue";
+import { NConfigProvider, darkTheme } from "naive-ui";
 
-darkTheme.common.cardColor = "#272a2c";
+import { shallowRef } from "vue";
+import type { ArcRotateCamera, Engine, Scene } from "@babylonjs/core";
+import { GridAxisManager } from "./libs";
+import { DI, type TAppContext } from "./di";
 
-emitter.on("scene_loaded",e=>{
-  generateGrid(e.scene);
-  const box = MeshBuilder.CreateBox("box", {}, e.scene);
-  box.position.x = 1;
-  box.position.z = 2;
-  box.position.y = 0.5;
-  box.renderingGroupId = 2;
-});
+const ctx = shallowRef<TAppContext>();
+
+DI.add("app-context", ctx as any);
+
+function handleSceneLoaded(
+  engine: Engine,
+  scene: Scene,
+  camera: ArcRotateCamera
+) {
+  ctx.value = {
+    scene,
+    engine,
+    camera,
+    gridAxisManager: new GridAxisManager(scene),
+  };
+}
 </script>
 
 <template>
   <NConfigProvider
     :theme="darkTheme"
+    :theme-overrides="{ common: { cardColor: '#272a2c' } }"
     style="display: flex; flex-direction: column; height: 100vh"
   >
     <Nav></Nav>
-    <BabylonScene></BabylonScene>
-
-    <ViewportGizmo></ViewportGizmo>
+    <BabylonScene @loaded="handleSceneLoaded"></BabylonScene>
   </NConfigProvider>
 </template>
 
