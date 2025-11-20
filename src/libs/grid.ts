@@ -4,6 +4,23 @@ import { GridMaterial } from "@babylonjs/materials";
 export class GridAxisManager {
     private readonly ground: GroundMesh;
     private readonly axises: ReadonlyArray<GreasedLineBaseMesh | GreasedLineMesh | GreasedLineRibbonMesh>;
+    private isOrthogonal = false;
+
+    private get axisX() {
+        return this.axises[0]!;
+    }
+
+    private get axisY() {
+        return this.axises[1]!;
+    }
+
+    private get axisZ() {
+        return this.axises[2]!;
+    }
+
+    private get axis0() {
+        return this.axises[3]!;
+    }
 
     /**
      *
@@ -14,7 +31,7 @@ export class GridAxisManager {
         this.axises[1]!.visibility = 0;
     }
 
-    initGrid(root?: TransformNode) {
+    private initGrid(root?: TransformNode) {
         const grid = new GridMaterial("grid", this.scene);
         grid.mainColor = new Color3(0.59, 0.59, 0.59);
         grid.lineColor = Color3.White();
@@ -31,7 +48,7 @@ export class GridAxisManager {
         return ground;
     }
 
-    initAxis(root?: TransformNode) {
+    private initAxis(root?: TransformNode) {
         const width = 0.1;
         const extra = width / 2;
         const axis = new TransformNode("axis", this.scene);
@@ -58,5 +75,62 @@ export class GridAxisManager {
 
                 return line;
             });
+    }
+
+    setOrthogonal(axis: "X" | "Y" | "Z", direction: -1 | 1) {
+        this.isOrthogonal = true;
+
+        // 设置ground
+        this.ground.rotation =
+            axis === 'X' ? new Vector3(0, 0, Math.PI / 2) :
+                axis === 'Z' ? new Vector3(Math.PI / 2) :
+                    new Vector3(0, 0, 0);
+
+
+        if (axis === 'X') {
+            this.axisY.rotation = new Vector3(0, Math.PI / 2, 0);
+            this.axisZ.rotation = new Vector3(0, 0, Math.PI / 2);
+            this.axis0.rotation = new Vector3(0, Math.PI / 2, 0);
+
+            this.axisX.visibility = 0;
+            this.axisY.visibility = 1;
+            this.axisZ.visibility = 1;
+        }
+        else if (axis === "Y") {
+            this.axisX.rotation = new Vector3(Math.PI / 2, 0, 0);
+            this.axisZ.rotation = new Vector3(0, 0, 0);
+            this.axis0.rotation = new Vector3(Math.PI / 2, 0, 0);
+
+            this.axisX.visibility = 1;
+            this.axisY.visibility = 0;
+            this.axisZ.visibility = 1;
+        } else {
+            this.axisX.rotation = new Vector3(0, 0, 0);
+            this.axisY.rotation = new Vector3(0, 0, 0);
+            this.axis0.rotation = new Vector3(0, 0, 0);
+
+            this.axisX.visibility = 1
+            this.axisY.visibility = 1;
+            this.axisZ.visibility = 0;
+        }
+    }
+
+    setPerspective() {
+        if (!this.isOrthogonal) return;
+        this.isOrthogonal = false;
+
+        // 设置ground
+        this.ground.rotation = new Vector3(0, 0, 0);
+
+        // 修改轴向
+        this.axisY.visibility = 0;
+        this.axisX.rotation = new Vector3(Math.PI / 2, 0, 0);
+        this.axisY.rotation = new Vector3(0, Math.PI / 2, 0);
+        this.axisZ.rotation = new Vector3(0, 0, 0);
+        this.axis0.rotation = new Vector3(Math.PI / 2, 0, 0);
+
+        this.axisX.visibility = 1;
+        this.axisY.visibility = 0;
+        this.axisX.visibility = 1;
     }
 }

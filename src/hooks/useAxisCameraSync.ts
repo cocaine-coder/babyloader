@@ -1,5 +1,6 @@
 import type { ArcRotateCamera } from "@babylonjs/core";
 import { computed, ref, watchEffect } from "vue";
+import { DI } from "../di";
 
 export type TAxisTransform = {
     axisType: "X" | "Y" | "Z";
@@ -8,6 +9,7 @@ export type TAxisTransform = {
 };
 
 export function useAxisCameraSync(camera: ArcRotateCamera, axisSize: number = 40) {
+    const appContext = DI.get("app-context");
     const alpha = ref(camera.alpha);
     const beta = ref(camera.beta);
 
@@ -114,7 +116,6 @@ export function useAxisCameraSync(camera: ArcRotateCamera, axisSize: number = 40
             case "X":
                 beta.value = Math.PI / 2;
                 alpha.value = direction > 0 ? 0 : Math.PI;
-
                 break;
             case "Z":
                 beta.value = Math.PI / 2;
@@ -125,14 +126,16 @@ export function useAxisCameraSync(camera: ArcRotateCamera, axisSize: number = 40
                 beta.value = direction > 0 ? 0 : Math.PI;
                 break;
         }
+
+        appContext.value?.gridAxisManager.setOrthogonal(type, direction);
     }
 
-    watchEffect(()=>{
+    watchEffect(() => {
         camera.alpha = alpha.value;
         camera.beta = beta.value;
     });
 
-    camera.onViewMatrixChangedObservable.add(()=>{
+    camera.onViewMatrixChangedObservable.add(() => {
         alpha.value = camera.alpha;
         beta.value = camera.beta;
     });
