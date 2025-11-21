@@ -2,6 +2,7 @@ import { Color3, CreateGreasedLine, GreasedLineBaseMesh, GreasedLineMesh, Grease
 import { GridMaterial } from "@babylonjs/materials";
 
 export class GridAxisManager {
+    private readonly root : TransformNode;
     private readonly ground: GroundMesh;
     private readonly axises: ReadonlyArray<GreasedLineBaseMesh | GreasedLineMesh | GreasedLineRibbonMesh>;
     private isInAxis = false;
@@ -25,9 +26,10 @@ export class GridAxisManager {
     /**
      *
      */
-    constructor(private scene: Scene, root?: TransformNode) {
-        this.ground = this.initGrid(root);
-        this.axises = this.initAxis(root);
+    constructor(private scene: Scene) {
+        this.root = new TransformNode("root-grid-axis", this.scene);
+        this.ground = this.initGrid(this.root);
+        this.axises = this.initAxis(this.root);
         this.axises[1]!.visibility = 0;
     }
 
@@ -77,7 +79,11 @@ export class GridAxisManager {
             });
     }
 
-    freezeInAxis(axis: "X" | "Y" | "Z", direction: -1 | 1) {
+    setEnable(val: boolean){
+        this.root.setEnabled(val);
+    }
+
+    freezeInAxis(axis: "X" | "Y" | "Z", _direction: -1 | 1) {
         this.isInAxis = true;
 
         // 设置ground
