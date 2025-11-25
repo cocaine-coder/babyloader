@@ -10,7 +10,7 @@ import {
   type Engine,
   type Scene,
 } from "@babylonjs/core";
-import { GridAxisManager } from "./libs";
+import { GridAxisManager, ModelsManager } from "./libs";
 import { DI, type TAppContext } from "./di";
 
 const ctx = shallowRef<TAppContext>();
@@ -27,13 +27,8 @@ function handleSceneLoaded(
     engine,
     camera,
     gridAxisManager: new GridAxisManager(scene),
+    modelsManager: new ModelsManager(scene),
   };
-
-  const box = MeshBuilder.CreateBox("box", {}, scene);
-  box.renderingGroupId = 1;
-  box.position.y = 1;
-  box.position.z = 2;
-  box.position.x = 1;
 }
 </script>
 

@@ -1,12 +1,14 @@
 import { ArcRotateCamera, Engine, Scene } from "@babylonjs/core"
 import { provide, inject, type ShallowRef } from "vue"
 import type { GridAxisManager } from "./libs";
+import type { ModelsManager } from "./libs";
 
 export type TAppContext = {
     scene: Scene;
     engine: Engine;
     camera: ArcRotateCamera;
     gridAxisManager: GridAxisManager;
+    modelsManager: ModelsManager;
 };
 
 type TDITypes = {
