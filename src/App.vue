@@ -30,7 +30,7 @@ function handleSceneLoaded(
   };
 
   const box = MeshBuilder.CreateBox("box", {}, scene);
-  box.renderingGroupId = 2;
+  box.renderingGroupId = 1;
   box.position.y = 1;
   box.position.z = 2;
   box.position.x = 1;

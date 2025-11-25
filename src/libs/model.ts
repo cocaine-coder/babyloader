@@ -1,5 +1,4 @@
 import { LoadAssetContainerAsync, type Scene } from "@babylonjs/core";
-import { MTLFileLoader } from "@babylonjs/loaders";
 
 export class ModelsManager {
     public static readonly allowed_extensions = [".glb", ".ply", ".splat", ".spz", ".fbx", ".stl"];
@@ -12,5 +11,9 @@ export class ModelsManager {
     }
 
     async loadModel(files: FileList) {
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            await LoadAssetContainerAsync(file!, this.scene)
+        }
     }
 }

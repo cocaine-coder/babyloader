@@ -11,7 +11,7 @@ export default defineConfig({
       {
         name: '@babylonjs/core',
         var: 'BABYLON',
-        path: 'https://cdn.babylonjs.com/babylon.js'
+        path: 'https://cdn.babylonjs.com/babylon.js',
       }, {
         name: '@babylonjs/loaders',
         var: 'BABYLON',
