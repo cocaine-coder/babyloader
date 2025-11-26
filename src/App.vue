@@ -29,6 +29,15 @@ function handleSceneLoaded(
     gridAxisManager: new GridAxisManager(scene),
     modelsManager: new ModelsManager(scene),
   };
+
+  document.body.addEventListener("drop", (e) => {
+    e.preventDefault();
+    ctx.value?.modelsManager.loadModel(e.dataTransfer!.files, []);
+  });
+
+  document.body.addEventListener("dragover", (e) => {
+    e.preventDefault();
+  });
 }
 </script>
 

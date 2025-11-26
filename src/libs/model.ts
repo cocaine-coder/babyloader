@@ -33,15 +33,17 @@ export class ModelsManager {
                     }
                 })
 
-                LoadAssetContainerAsync(file, this.scene, {
+               tasks.push(LoadAssetContainerAsync(file, this.scene, {
                     onProgress: (event) => {
 
                     }
-                });
+                }));
             }
         }
 
         const containers = await Promise.all(tasks);
+
+        console.log(containers);
 
         containers.forEach(container => {
             const itemRoot = container.createRootMesh();
